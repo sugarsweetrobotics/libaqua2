@@ -15,11 +15,11 @@ int main(void) {
       
       for(size_t i = 0;i < gamePad->axis.size();i++) {
           std::cout << "A["<<i<<"]:" << gamePad->axis[i] << std::endl;
-      }/*
-      for(size_t i = 0;i < gamePad.buttons.size();i++) {
-          std::cout << "B["<<i<<"]:" << gamePad.buttons[i] << std::endl;
       }
-      */
+      for(size_t i = 0;i < gamePad->buttons.size();i++) {
+          std::cout << "B["<<i<<"]:" << gamePad->buttons[i] << std::endl;
+      }
+      
   }
   return(0);
 }
