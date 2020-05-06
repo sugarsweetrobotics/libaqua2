@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(aqua2_test)
+project(aqua2_test VERSION 0.0.1)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
