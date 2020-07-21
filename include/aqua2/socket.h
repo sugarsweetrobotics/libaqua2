@@ -58,7 +58,7 @@ namespace ssr {
       
     };
     
-    void initializeSocket() {
+    inline void initializeSocket() {
 #ifdef WIN32
       WSADATA wsaData;
       WSAStartup(MAKEWORD(2, 0), &wsaData);
@@ -73,8 +73,8 @@ namespace ssr {
     private:
       std::string msg;
     public:
-    SocketException() : msg("Unknown") {}
-    SocketException(const char* msg_) : msg(msg_) {}
+      SocketException() : msg("Unknown") {}
+      SocketException(const char* msg_) : msg(msg_) {}
       ~SocketException() throw() {}
       
       
@@ -88,8 +88,9 @@ namespace ssr {
     /**
      * class Socket.
      */
-    class Socket : public SerialDevice {
+    class Socket {
     private:
+      bool okay_;
       
 #ifdef WIN32
       
@@ -119,23 +120,25 @@ namespace ssr {
       }
       
     public:
+      bool okay() const { return okay_ ; }
+    public:
       Socket() {
       }
       
       /**
        * Constructor
        */
-      Socket(const char* address, const uint32_t port) {
-	Connect(address, port);
+      Socket(const char* address, const uint32_t port) : okay_(false) {
+	      connect(address, port);
       }
       
-      Socket(const Socket& socket) {
-	CopyFrom(socket);
+      Socket(const Socket& socket): okay_(false) {
+	      copyFrom(socket);
       }
       
-      void operator=(const Socket& socket) { CopyFrom(socket); }
+      void operator=(const Socket& socket)  { copyFrom(socket); }
     public:
-      void Connect(const char* address, const uint32_t port)
+      void connect(const char* address, const uint32_t port)
       {
        initSocket();
 #ifdef WIN32
@@ -181,21 +184,24 @@ namespace ssr {
        m_SockAddr.sin_family = AF_INET;
        m_SockAddr.sin_port   = htons(port);
        
-       if (connect(m_Socket, (struct sockaddr *)&m_SockAddr, sizeof(m_SockAddr)) < 0){
-	 std::ostringstream ss;
-	 ss << "Connect Failed. (address=" << address << ", port=" << port << ")";
-	 throw SocketException(ss.str().c_str());
+       if (::connect(m_Socket, (struct sockaddr *)&m_SockAddr, sizeof(m_SockAddr)) < 0){
+            std::ostringstream ss;
+            ss << "Connect Failed. (address=" << address << ", port=" << port << ")";
+            throw SocketException(ss.str().c_str());
        }
+       okay_ = true;
 #endif
       }
       
-      void CopyFrom(const Socket& socket)
+      void copyFrom(const Socket& socket)
       {
 #ifdef WIN32
+       okay_ = socket.okay_;
        m_SockAddr = socket.m_SockAddr;
        m_Socket = socket.m_Socket;
        
 #else // WIN32
+       okay_ = socket.okay_;
        m_SockAddr = socket.m_SockAddr;
        m_Socket = socket.m_Socket;
 #endif
@@ -203,17 +209,16 @@ namespace ssr {
       
       
 #ifdef WIN32
-      Socket(SOCKET hsocket, struct sockaddr_in sockaddr_)
+      Socket(SOCKET hsocket, struct sockaddr_in sockaddr_) : okay_(true)
       {
        m_Socket = hsocket;
        m_SockAddr = sockaddr_;
       }
 #else // WIN32
-      Socket(int hsocket, struct sockaddr_in& sockaddr_)
+      Socket(int hsocket, struct sockaddr_in& sockaddr_): okay_(true)
 	{
-	 
-	 m_Socket = hsocket;
-	 m_SockAddr = sockaddr_;
+            m_Socket = hsocket;
+            m_SockAddr = sockaddr_;
 	}
       
 #endif
@@ -225,11 +230,11 @@ namespace ssr {
 #ifdef WIN32
 		 //closesocket(m_Socket);
 #else
-		 //close(m_Socket);
+		//close();
 #endif
       }
       
-      int GetSizeInRxBuffer()
+      int getSizeInRxBuffer()
       {
 #ifdef WIN32
        unsigned long count;
@@ -246,7 +251,7 @@ namespace ssr {
 #endif
       }
       
-      int Write(const void* src, const unsigned int size)
+      int write(const void* src, const unsigned int size)
       {
        
 #ifdef WIN32
@@ -256,7 +261,7 @@ namespace ssr {
 #endif
       }
       
-      int Read(void* dst, const unsigned int size)
+      int read(void* dst, const unsigned int size)
       {
 #ifdef WIN32
        return recv(m_Socket, (char*)dst, size, 0);
@@ -265,7 +270,7 @@ namespace ssr {
 #endif      
       }
       
-      int Close()
+      int close()
       {
 #ifdef WIN32
        if (closesocket(m_Socket) < 0)
@@ -274,10 +279,13 @@ namespace ssr {
 	 }
        return 0;
 #else
-       if (close(m_Socket) < 0) {
-	 return -1;
-       }
-       return 0;
+            if (okay()) {
+                  if (::close(m_Socket) < 0) {
+                        return -1;
+                  }
+                  return 0;
+            } 
+            return 0;
 #endif
       }
     };
