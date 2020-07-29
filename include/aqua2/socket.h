@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/ioctl.h>
+#include <poll.h>
 #endif // WIN32
 
 
@@ -121,6 +122,38 @@ namespace ssr {
       
     public:
       bool okay() const { return okay_ ; }
+
+      bool isConnected() {
+            fd_set read_sd;
+            FD_ZERO(&read_sd);
+            FD_SET(m_Socket, &read_sd);
+
+            fd_set rsd = read_sd;
+            struct timeval timevalue;
+            timevalue.tv_sec = 0;
+            timevalue.tv_usec = 0;
+            int sel = select(m_Socket + 1, &rsd, 0, 0, &timevalue);
+            if (sel > 0) {
+                  char buf[1024] = {0};
+                  int bytes = recv(m_Socket, buf, sizeof(buf), 0);
+                  if (bytes == 0) return false;
+            } else if (sel < 0) {
+                  perror("isConnected Error");
+            }
+            return true;
+            /*
+            struct pollfd pfd;
+            pfd.fd = m_Socket;
+            pfd.events = POLLSTANDARD; 
+            int timeout = 0;
+            poll(&pfd, 1, timeout); 
+            auto revents = pfd.revents; 
+            if (revents & POLLHUP) {  return false; }
+            return true;
+            */
+      }
+
+
     public:
       Socket() {
       }
