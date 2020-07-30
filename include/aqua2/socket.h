@@ -143,7 +143,19 @@ namespace ssr {
             }
             return true;
             */
-            
+#ifdef WIN32
+          const int numFds = 1;
+          WSAPOLLFD fds[numFds];
+          fds[0].fd = m_Socket;
+          fds[0].events = POLLIN;
+          int timeoutMs = 0;
+
+          auto res = WSAPoll(fds, numFds, timeoutMs);
+          if (fds[0].revents & (POLLIN | POLLHUP)) {
+              return false;
+          }
+          return true;
+#else
             struct pollfd pfd;
             pfd.fd = m_Socket;
             pfd.events = POLLSTANDARD; 
@@ -152,7 +164,7 @@ namespace ssr {
             auto revents = pfd.revents; 
             if (revents & POLLHUP) {  return false; }
             return true;
-            
+#endif            
       }
 
 
