@@ -124,6 +124,7 @@ namespace ssr {
       bool okay() const { return okay_ ; }
 
       bool isConnected() {
+            /*
             fd_set read_sd;
             FD_ZERO(&read_sd);
             FD_SET(m_Socket, &read_sd);
@@ -141,7 +142,8 @@ namespace ssr {
                   perror("isConnected Error");
             }
             return true;
-            /*
+            */
+            
             struct pollfd pfd;
             pfd.fd = m_Socket;
             pfd.events = POLLSTANDARD; 
@@ -150,7 +152,7 @@ namespace ssr {
             auto revents = pfd.revents; 
             if (revents & POLLHUP) {  return false; }
             return true;
-            */
+            
       }
 
 
