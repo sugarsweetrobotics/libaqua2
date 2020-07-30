@@ -108,7 +108,7 @@ namespace ssr {
     private:
       void initSocket() {
 #ifdef WIN32
-	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+	m_Socket = ::socket(AF_INET, SOCK_STREAM, 0);
 	if (m_Socket == INVALID_SOCKET) {
 	  throw SocketException("socket function failed.");
 	}
@@ -215,7 +215,7 @@ namespace ssr {
 	 
 	 freeaddrinfo(addrinfo);
        }
-       if (connect(m_Socket, (struct sockaddr *)&m_SockAddr, sizeof(m_SockAddr)) < 0) {
+       if (::connect(m_Socket, (struct sockaddr *)&m_SockAddr, sizeof(m_SockAddr)) < 0) {
 	 throw SocketException("connect failed.");
        }
        
@@ -285,7 +285,7 @@ namespace ssr {
       {
 #ifdef WIN32
        unsigned long count;
-       if (ioctlsocket(m_Socket, FIONREAD, &count) != 0) {
+       if (::ioctlsocket(m_Socket, FIONREAD, &count) != 0) {
 	 throw SocketException("ioctlsocket failed.");
        }
        return count;
@@ -302,7 +302,7 @@ namespace ssr {
       {
        
 #ifdef WIN32
-       return send(m_Socket, (const char*)src, size, 0);
+       return ::send(m_Socket, (const char*)src, size, 0);
 #else
        return send(m_Socket, src, size, 0);
 #endif
@@ -311,7 +311,7 @@ namespace ssr {
       int read(void* dst, const unsigned int size)
       {
 #ifdef WIN32
-       return recv(m_Socket, (char*)dst, size, 0);
+       return ::recv(m_Socket, (char*)dst, size, 0);
 #else
        return recv(m_Socket, dst, size, 0);
 #endif      
@@ -320,7 +320,7 @@ namespace ssr {
       int close()
       {
 #ifdef WIN32
-       if (closesocket(m_Socket) < 0)
+       if (::closesocket(m_Socket) < 0)
 	 {
 	  return -1;
 	 }
