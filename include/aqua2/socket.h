@@ -30,6 +30,8 @@
 #include <sstream>
 
 
+#pragma comment(lib, "Ws2_32.lib")
+
 namespace ssr {
   namespace aqua2 {
     class SocketInitializer {
