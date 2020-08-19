@@ -149,11 +149,11 @@ namespace ssr {
           const int numFds = 1;
           WSAPOLLFD fds[numFds];
           fds[0].fd = m_Socket;
-          fds[0].events = POLLIN;
+          fds[0].events = POLLIN | POLLHUP;
           int timeoutMs = 0;
 
           auto res = WSAPoll(fds, numFds, timeoutMs);
-          if (fds[0].revents & (POLLIN | POLLHUP)) {
+          if (fds[0].revents & (POLLHUP)) {
               return false;
           }
           return true;
